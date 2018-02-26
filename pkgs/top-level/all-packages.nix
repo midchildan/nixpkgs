@@ -111,6 +111,10 @@ with pkgs;
 
   buildMaven = callPackage ../build-support/build-maven.nix {};
 
+  chinachu = callPackage ../applications/video/chinachu {
+    nodejs = nodejs-8_x;
+  };
+
   cmark = callPackage ../development/libraries/cmark { };
 
   dhallToNix = callPackage ../build-support/dhall-to-nix.nix {

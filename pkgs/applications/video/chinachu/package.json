@@ -1,0 +1,57 @@
+{
+  "name": "chinachu",
+  "description": "Most Lovely DVR Software in Japan.",
+  "version": "0.9.5-gamma.0",
+  "private": true,
+  "homepage": "https://chinachu.moe/",
+  "author": {
+    "name": "Yuki KAN",
+    "email": "re@pixely.jp",
+    "url": "https://github.com/kanreisa"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kanreisa/Chinachu.git"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/kanreisa/Chinachu/blob/master/LICENSE"
+    }
+  ],
+  "bugs": {
+    "url": "https://github.com/kanreisa/Chinachu/issues"
+  },
+  "dependencies": {
+    "chinachu-upnp-server": "^0.0.2",
+    "dateformat": "~1.0.6-1.2.3",
+    "diskusage": "^0.1.5",
+    "easy-table": "~0.2.0",
+    "geoip-lite": "^1.1.6",
+    "hoard": "~0.1.5",
+    "http-auth": "^2.2.8",
+    "ip": "^1.1.5",
+    "mdns-js": "^0.5.0",
+    "mirakurun": "^2.3.0",
+    "mkdirp": "~0.3.5",
+    "mtwitter": "~1.5.2",
+    "nodemailer": "^2.7.0",
+    "nodemailer-sendmail-transport": "^1.0.0",
+    "opts": "~1.2.2",
+    "socket.io": "^1.7.2",
+    "string": "~1.5.1",
+    "swagger-client": "github:kanreisa/swagger-js#feature/unix-domain-socket",
+    "xml2js": "~0.2.8"
+  },
+  "devDependencies": {
+    "mocha": "*",
+    "should": "*",
+    "sinon": "*"
+  },
+  "scripts": {
+    "test": "mocha -R spec"
+  },
+  "engines": {
+    "node": ">=6.9.0"
+  }
+}

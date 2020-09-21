@@ -20,22 +20,15 @@
 
 stdenv.mkDerivation rec {
   pname = "mikutter";
-  version = "4.0.0";
+  version = "4.1.1";
 
   src = fetchurl {
-    url = "https://mikutter.hachune.net/bin/mikutter.${version}.tar.gz";
-    sha256 = "0nx14vlp7p69m2vw0s6kbiyymsfq0r2jd4nm0v5c4xb9avkpgc8g";
+    url = "https://mikutter.hachune.net/bin/mikutter-${version}.tar.gz";
+    sha256 = "0vc3k25z8i7cs5lks9s779c7wy8nwsgkgqr13mls5nd0f13kmkjc";
   };
 
   buildInputs = [ alsaUtils libnotify which gtk2 ruby atk gobject-introspection ];
   nativeBuildInputs = [ wrapGAppsHook ];
-
-  unpackPhase = ''
-    mkdir source
-    cd source
-    unpackFile $src
-    rm -rf vendor
-  '';
 
   installPhase = let
     env = bundlerEnv {
@@ -73,7 +66,7 @@ stdenv.mkDerivation rec {
   '';
 
   meta = with stdenv.lib; {
-    description = "An extensible Twitter client";
+    description = "An extensible client for micro-blogging platforms";
     homepage = "https://mikutter.hachune.net";
     platforms = ruby.meta.platforms;
     license = licenses.mit;

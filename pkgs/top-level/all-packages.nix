@@ -11696,6 +11696,8 @@ julia_15 = callPackage ../development/compilers/julia/1.5.nix {
   }));
   pkgconfigUpstream = pkg-configUpstream; # added 2018-02-02
 
+  poke = callPackage ../development/tools/poke { };
+
   inherit (nodePackages) postcss-cli;
 
   postiats-utilities = callPackage ../development/tools/postiats-utilities {};

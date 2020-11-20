@@ -1,0 +1,43 @@
+diff --git a/bootstrap.conf b/bootstrap.conf
+index 7e06e3c2..8aeb090b 100644
+--- a/bootstrap.conf
++++ b/bootstrap.conf
+@@ -168,38 +168,4 @@ bootstrap_post_import_hook ()
+ 
+   # create gl-gui
+   ${GNULIB_SRCDIR}/gnulib-tool --import --lib=libgnu --source-base=gl-gui --m4-base=m4/gui --doc-base=doc --aux-dir=build-aux --no-conditional-dependencies --libtool --without-tests --macro-prefix=gui ${gui_modules}
+-
+-  echo 'Updating the Jitter submodule'
+-  git submodule update --init -- ./jitter
+-
+-  echo 'Bootstrapping Jitter'
+-  (
+-  cd jitter
+-  ./bootstrap --gnulib-srcdir=../gnulib --no-git
+-  ) || exit $?
+-
+-  echo 'Importing Autoconf macros from Jitter...'
+-  cp jitter/autoconf/jitter.m4 m4/
+-
+-  # Copy pkg-config's pkg.m4 so that our downstream users don't need to.
+-  local ac_dir=`aclocal --print-ac-dir`
+-  test -s "$ac_dir/dirlist" && ac_dir=$ac_dir:`tr '\n' : < "$ac_dir/dirlist"`
+-  oIFS=$IFS
+-  IFS=:
+-  for dir in \
+-    $ACLOCAL_PATH $ac_dir /usr/share/aclocal ''
+-  do
+-    IFS=$oIFS
+-    if test -n "$dir" && test -r "$dir/pkg.m4"; then
+-      cp "$dir/pkg.m4" m4/pkg.m4
+-      return
+-    fi
+-  done
+-  IFS=$oIFS
+-  die 'Cannot find pkg.m4; perhaps you need to install pkg-config'
+-
+-  # Set up saner diff order
+-  if ! (git config --get diff.orderFile) >/dev/null 2>&1; then
+-     git config diff.orderFile etc/git.orderfile
+-  fi
+ }

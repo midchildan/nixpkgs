@@ -11456,6 +11456,8 @@ julia_15 = callPackage ../development/compilers/julia/1.5.nix {
 
   jikespg = callPackage ../development/tools/parsing/jikespg { };
 
+  jitter = callPackage ../development/tools/jitter { };
+
   jenkins = callPackage ../development/tools/continuous-integration/jenkins { };
 
   jenkins-job-builder = with python3Packages; toPythonApplication jenkins-job-builder;

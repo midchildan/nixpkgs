@@ -21,6 +21,9 @@ stdenv.mkDerivation rec {
     cp ${jitter}/share/aclocal/jitter.m4 m4/jitter.m4
     cp ${pkg-config}/share/aclocal/pkg.m4 m4/pkg.m4
 
+    # FIXME: remove when a newer gnulib with gl_PROG_BISON is available
+    cp ${./bison.m4} m4/bison.m4
+
     ./bootstrap --no-git --gnulib-srcdir=${gnulib}
   '';
 

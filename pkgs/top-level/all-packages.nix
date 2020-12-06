@@ -18155,7 +18155,9 @@ in
 
   openisns = callPackage ../os-specific/linux/open-isns { };
 
-  osxfuse = callPackage ../os-specific/darwin/osxfuse { };
+  osxfuse = callPackage ../os-specific/darwin/osxfuse {
+    inherit (darwin.apple_sdk.frameworks) DiskArbitration;
+  };
 
   osxsnarf = callPackage ../os-specific/darwin/osxsnarf { };
 

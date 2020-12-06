@@ -1,43 +1,24 @@
-{ stdenv, runCommand, fetchFromGitHub, autoreconfHook }:
-
-let
-  version = "3.8.3";
-
-  headers = runCommand "osxfuse-common-${version}" {
-    src = fetchFromGitHub {
-      owner = "osxfuse";
-      repo = "osxfuse";
-      rev = "osxfuse-${version}";
-      sha256 = "13lmg41zcyiajh8m42w7szkbg2is4551ryx2ia2mmzvvd23pag0z";
-    };
-  } ''
-    mkdir -p $out/include
-    cp --target-directory=$out/include $src/common/*.h
-  '';
-in
+{ stdenv, fetchFromGitHub, autoreconfHook, DiskArbitration }:
 
 stdenv.mkDerivation {
-
-  pname = "osxfuse";
-  inherit version;
+  pname = "osxfuse-unstable";
+  version = "2020-10-21";
 
   src = fetchFromGitHub {
     owner = "osxfuse";
     repo = "fuse";
-    rev = "1a1977a"; # Submodule reference from osxfuse/osxfuse at tag osxfuse-${version}
-    sha256 = "101fw8j40ylfbbrjycnwr5qp422agyf9sfbczyb9w5ivrkds3rfw";
+    rev = "c6a59bed40bb526c113f861ed49a78b5f224805a";
+    sha256 = "1xpc7p4xx7jwlpwjfs83f69451cnqhamvx5whhbpd8i8qw235nb7";
   };
 
   postPatch = ''
     touch config.rpath
   '';
 
-  postInstall = ''
-    ln -s osxfuse.pc $out/lib/pkgconfig/fuse.pc
-  '';
-
   nativeBuildInputs = [ autoreconfHook ];
-  buildInputs = [ headers ];
+  buildInputs = [ DiskArbitration ];
+
+  CFLAGS = "-DOSXFUSE_VERSION=\\\"4.0.4\\\" -D_DARWIN_FEATURE_64_BIT_INODE";
 
   meta = with stdenv.lib; {
     homepage = "https://osxfuse.github.io";

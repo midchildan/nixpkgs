@@ -8,22 +8,20 @@ let
   username = config.users.users.epgstation.name;
   groupname = config.users.users.epgstation.group;
 
-  settingsFmt = pkgs.formats.json {};
-  settingsTemplate = settingsFmt.generate "config.json" cfg.settings;
+  settingsFmt = pkgs.formats.yaml {};
+  settingsTemplate = settingsFmt.generate "config.yml" cfg.settings;
   preStartScript = pkgs.writeScript "epgstation-prestart" ''
     #!${pkgs.runtimeShell}
 
-    PASSWORD="$(head -n1 "${cfg.basicAuth.passwordFile}")"
     DB_PASSWORD="$(head -n1 "${cfg.database.passwordFile}")"
 
     # setup configuration
-    touch /etc/epgstation/config.json
-    chmod 640 /etc/epgstation/config.json
+    touch /etc/epgstation/config.yml
+    chmod 640 /etc/epgstation/config.yml
     sed \
-      -e "s,@password@,$PASSWORD,g" \
       -e "s,@dbPassword@,$DB_PASSWORD,g" \
-      ${settingsTemplate} > /etc/epgstation/config.json
-    chown "${username}:${groupname}" /etc/epgstation/config.json
+      ${settingsTemplate} > /etc/epgstation/config.yml
+    chown "${username}:${groupname}" /etc/epgstation/config.yml
 
     # NOTE: Use password authentication, since mysqljs does not yet support auth_socket
     if [ ! -e /var/lib/epgstation/db-created ]; then
@@ -47,6 +45,14 @@ let
   defaultPassword = "INSECURE_GO_CHECK_CONFIGURATION_NIX\n";
 in
 {
+  imports = [
+    (mkRemovedOptionModule [ "services" "epgstation" "basicAuth" ] ''
+      Built-in support for basic authentication was removed with the v2 release
+      due to the feature being misused as a security measure to restrict access
+      from the public internet.
+    '')
+  ];
+
   options.services.epgstation = {
     enable = mkEnableOption pkgs.epgstation.meta.description;
 
@@ -57,7 +63,7 @@ in
         Use preconfigured default streaming options.
 
         Upstream defaults:
-        <link xlink:href="https://github.com/l3tnun/EPGStation/blob/master/config/config.sample.json"/>
+        <link xlink:href="https://github.com/l3tnun/EPGStation/blob/master/config/config.sample.yml"/>
       '';
     };
 
@@ -103,36 +109,6 @@ in
       '';
     };
 
-    basicAuth = {
-      user = mkOption {
-        type = with types; nullOr str;
-        default = null;
-        example = "epgstation";
-        description = ''
-          Basic auth username for EPGStation. If <literal>null</literal>, basic
-          auth will be disabled.
-
-          <warning>
-            <para>
-              Basic authentication has known weaknesses, the most critical being
-              that it sends passwords over the network in clear text. Use this
-              feature to control access to EPGStation within your family and
-              friends, but don't rely on it for security.
-            </para>
-          </warning>
-        '';
-      };
-
-      passwordFile = mkOption {
-        type = types.path;
-        default = pkgs.writeText "epgstation-password" defaultPassword;
-        example = "/run/keys/epgstation-password";
-        description = ''
-          A file containing the password for <option>basicAuth.user</option>.
-        '';
-      };
-    };
-
     database =  {
       name = mkOption {
         type = types.str;
@@ -155,7 +131,7 @@ in
 
     settings = mkOption {
       description = ''
-        Options to add to config.json.
+        Options to add to config.yml.
 
         Documentation:
         <link xlink:href="https://github.com/l3tnun/EPGStation/blob/master/doc/conf-manual.md"/>
@@ -169,12 +145,6 @@ in
 
       type = types.submodule {
         freeformType = settingsFmt.type;
-
-        options.readOnlyOnce = mkOption {
-          type = types.bool;
-          default = false;
-          description = "Don't reload configuration files at runtime.";
-        };
 
         options.mirakurunPath = mkOption (let
           sockPath = config.services.mirakurun.unixSocket;
@@ -190,12 +160,9 @@ in
           description = "Encoding presets for recorded videos.";
           default = [
             { name = "H264";
-              cmd = "${pkgs.epgstation}/libexec/enc.sh main";
+              cmd = "${pkgs.node}/bin/node ${pkgs.epgstation}/libexec/enc.js";
               suffix = ".mp4";
-              default = true; }
-            { name = "H264-sub";
-              cmd = "${pkgs.epgstation}/libexec/enc.sh sub";
-              suffix = "-sub.mp4"; }
+              rate = 4; }
           ];
         };
       };
@@ -204,8 +171,9 @@ in
 
   config = mkIf cfg.enable {
     environment.etc = {
-      "epgstation/operatorLogConfig.json".text = builtins.toJSON logConfig;
-      "epgstation/serviceLogConfig.json".text = builtins.toJSON logConfig;
+      "epgstation/epgUpdaterLogConfig.yml".text = builtins.toJSON logConfig;
+      "epgstation/operatorLogConfig.yml".text = builtins.toJSON logConfig;
+      "epgstation/serviceLogConfig.yml".text = builtins.toJSON logConfig;
     };
 
     networking.firewall = mkIf cfg.openFirewall {
@@ -245,21 +213,12 @@ in
           database = cfg.database.name;
           socketPath = mkDefault "/run/mysqld/mysqld.sock";
           password = mkDefault "@dbPassword@";
-          connectTimeout = mkDefault 1000;
-          connectionLimit = mkDefault 10;
-        };
-
-        basicAuth = mkIf (cfg.basicAuth.user != null) {
-          user = mkDefault cfg.basicAuth.user;
-          password = mkDefault "@password@";
         };
 
         ffmpeg = mkDefault "${pkgs.ffmpeg-full}/bin/ffmpeg";
         ffprobe = mkDefault "${pkgs.ffmpeg-full}/bin/ffprobe";
 
-        fileExtension = mkDefault ".m2ts";
-        maxEncode = mkDefault 2;
-        maxStreaming = mkDefault 2;
+        recordedFileExtension = mkDefault ".m2ts";
       };
     in
     mkMerge [
@@ -268,9 +227,14 @@ in
     ];
 
     systemd.tmpfiles.rules = [
-      "d '/var/lib/epgstation/streamfiles' - ${username} ${groupname} - -"
+      "d '/var/lib/epgstation/drop' - ${username} ${groupname} - -"
+      "d '/var/lib/epgstation/keys' - ${username} ${groupname} - -"
       "d '/var/lib/epgstation/recorded' - ${username} ${groupname} - -"
+      "d '/var/lib/epgstation/streamfiles' - ${username} ${groupname} - -"
       "d '/var/lib/epgstation/thumbnail' - ${username} ${groupname} - -"
+      "d '/var/lib/epgstation/db/subscribers' - ${username} ${groupname} - -"
+      "d '/var/lib/epgstation/db/migrations/mysql' - ${username} ${groupname} - -"
+      "d '/var/lib/epgstation/db/migrations/sqlite' - ${username} ${groupname} - -"
     ];
 
     systemd.services.epgstation = {

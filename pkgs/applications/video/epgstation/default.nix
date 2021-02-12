@@ -10,17 +10,18 @@
 , nodePackages
 , gzip
 , jq
+, yq
 }:
 
 let
   # NOTE: use updateScript to bump the package version
   pname = "EPGStation";
-  version = "1.7.5";
+  version = "2.0.8";
   src = fetchFromGitHub {
     owner = "l3tnun";
     repo = "EPGStation";
     rev = "v${version}";
-    sha256 = "06yaf5yb5rp3q0kdhw33df7px7vyfby885ckb6bdzw3wnams5d8m";
+    sha256 = "0n9s1lcwdzwsb2bpy5pgfica1jjqibphg05p6szcamn48mhfwfzx";
   };
 
   workaround-opencollective-buildfailures = stdenv.mkDerivation {
@@ -61,7 +62,7 @@ let
       npm run build
       npm prune --production
 
-      mv config/{enc.sh,enc.js} $out/libexec
+      mv config/{enc.js,enc3.js} $out/libexec
       mv LICENSE Readme.md $out/share/doc/epgstation
       mv doc/* $out/share/doc/epgstation
       sed 's/@DESCRIPTION@/${drv.meta.description}/g' ${./epgstation.1} \
@@ -78,8 +79,12 @@ let
       rm -r config data recorded thumbnail
       ln -sfT /etc/epgstation config
       ln -sfT /var/lib/epgstation data
+      ln -sfT /var/lib/epgstation/drop drop
       ln -sfT /var/lib/epgstation/recorded recorded
       ln -sfT /var/lib/epgstation/thumbnail thumbnail
+      ln -sfT /var/lib/epgstation/db/subscribers src/db/subscribers
+      ln -sfT /var/lib/epgstation/db/migrations/mysql src/db/migrations/mysql
+      ln -sfT /var/lib/epgstation/db/migrations/sqlite src/db/migrations/sqlite
 
       makeWrapper ${nodejs}/bin/npm $out/bin/epgstation \
        --run "cd $out/lib/node_modules/EPGStation" \
@@ -99,7 +104,8 @@ let
         common-updater-scripts
         genericUpdater
         writers
-        jq;
+        jq
+        yq;
     };
 
     # nodePackages.epgstation is a stub package to fetch npm dependencies and

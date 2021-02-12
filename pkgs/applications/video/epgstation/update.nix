@@ -6,6 +6,7 @@
 , genericUpdater
 , writers
 , jq
+, yq
 }:
 
 let
@@ -49,18 +50,6 @@ in writers.writeBash "update-epgstation" ''
 
   # Generate default streaming settings for the nixos module.
   pushd ../../../../nixos/modules/services/video/epgstation
-  ${jq}/bin/jq '
-    { liveHLS
-    , liveMP4
-    , liveWebM
-    , mpegTsStreaming
-    , mpegTsViewer
-    , recordedDownloader
-    , recordedStreaming
-    , recordedHLS
-    , recordedViewer
-    }' \
-    "$SRC/config/config.sample.json" \
-    > streaming.json
+  ${yq}/bin/yq '.stream' "$SRC/config/config.sample.yml" > streaming.json
   popd
 ''

@@ -35,12 +35,19 @@ in writers.writeBash "update-epgstation" ''
     exit
   fi
 
-  # Regenerate package.json from the latest source.
+  # Regenerate server package.json from the latest source.
   ${jq}/bin/jq '. + {
       dependencies: (.dependencies + .devDependencies),
     } | del(.devDependencies, .main, .scripts)' \
     "$SRC/package.json" \
     > package.json
+
+  # Regenerate client package.json from the latest source.
+  ${jq}/bin/jq '. + {
+      dependencies: (.dependencies + .devDependencies),
+    } | del(.devDependencies, .scripts)' \
+    "$SRC/client/package.json" \
+    > client/package.json
 
   # Regenerate node packages to update the pre-overriden epgstation derivation.
   # This must come *after* package.json has been regenerated.

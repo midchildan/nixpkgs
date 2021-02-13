@@ -36,6 +36,18 @@ let
     '';
   };
 
+  client = nodePackages.epgstation-client.override (drv: {
+    src = "${src}/client";
+
+    postInstall = ''
+      pushd $out/lib/node_modules/epgstation-client
+      npm run build
+      popd
+    '';
+
+    meta = drv.meta // { broken = false; };
+  });
+
   pkg = nodePackages.epgstation.override (drv: {
     inherit src;
 
@@ -57,16 +69,17 @@ let
     ''
       mkdir -p $out/{bin,libexec,share/doc/epgstation,share/man/man1}
 
-      pushd $out/lib/node_modules/EPGStation
+      pushd $out/lib/node_modules/epgstation
 
-      npm run build
+      npm run build-server
       npm prune --production
+
+      ln -sfT ${client}/lib/node_modules $out/lib/node_modules/epgstation/client/node_modules
 
       mv config/{enc.js,enc3.js} $out/libexec
       mv LICENSE Readme.md $out/share/doc/epgstation
       mv doc/* $out/share/doc/epgstation
-      sed 's/@DESCRIPTION@/${drv.meta.description}/g' ${./epgstation.1} \
-        | ${gzip}/bin/gzip > $out/share/man/man1/epgstation.1.gz
+      sed 's/@DESCRIPTION@/${drv.meta.description}/g' ${./epgstation.1}
       rm -rf doc
 
       # just log to stdout and let journald do its job

@@ -160,7 +160,7 @@ in
           description = "Encoding presets for recorded videos.";
           default = [
             { name = "H264";
-              cmd = "${pkgs.node}/bin/node ${pkgs.epgstation}/libexec/enc.js";
+              cmd = "${pkgs.nodejs}/bin/node ${pkgs.epgstation}/libexec/enc.js";
               suffix = ".mp4";
               rate = 4; }
           ];

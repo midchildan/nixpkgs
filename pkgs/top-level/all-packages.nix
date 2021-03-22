@@ -1310,6 +1310,10 @@ in
 
   flood = nodePackages.flood;
 
+  fuse-ext2 = callPackage ../tools/filesystems/fuse-ext2 {
+    inherit (darwin) libobjc;
+  };
+
   fxlinuxprintutil = callPackage ../tools/misc/fxlinuxprintutil { };
 
   genann = callPackage ../development/libraries/genann { };

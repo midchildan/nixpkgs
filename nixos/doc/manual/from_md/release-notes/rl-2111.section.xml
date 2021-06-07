@@ -21,6 +21,12 @@
           from 1.0.4 to 2.0.0
         </para>
       </listitem>
+      <listitem>
+        <para>
+          <literal>lispPackages.nyxt</literal> has been renamed to
+          <literal>lispPackages.nyxt-unwrapped</literal>
+        </para>
+      </listitem>
     </itemizedlist>
   </section>
 </section>

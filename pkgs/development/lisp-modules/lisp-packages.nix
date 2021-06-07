@@ -162,9 +162,9 @@ let lispPackages = rec {
             "(asdf/system:component-entry-point (asdf:find-system :nyxt/gi-gtk-application))" \
             "" \
             "(format *error-output* \"Alien objects:~%~s~%\" sb-alien::*shared-objects*)"
-        ' "$out/bin/nyxt-lisp-launcher.sh"
+        ' "$out/bin/${baseName}-lisp-launcher.sh"
 
-        mv "$out/lib/common-lisp/nyxt/nyxt" "$out/bin/"
+        mv "$out/lib/common-lisp/${baseName}/nyxt" "$out/bin/"
       '';
     };
 
